@@ -30,7 +30,7 @@ To run the app locally, follow these steps:
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-username/purchase-prediction.git
+   git clone https://github.com/stevet97/BuySmart---Purchase-Prediction-App
    ```
 
 2. Navigate into the project directory:
@@ -53,7 +53,8 @@ To run the app locally, follow these steps:
 ### Project Structure
 ```
 |-- purchase-prediction/
-    |-- data_preprocessing_+_model_project.py                  # Main Streamlit application (Not the catchiest name in the world)
+    |-- Architecture/data_preprocessing_+_model_project.py     # Main Streamlit application (Not the
+                                                                 catchiest name in the world)
     |-- data/                                                  # Folder for datasets
     |-- requirements.txt                                       # Dependencies for the project
     |-- README.md                                              # Project documentation
