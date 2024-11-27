@@ -53,10 +53,10 @@ To run the app locally, follow these steps:
 ### Project Structure
 ```
 |-- purchase-prediction/
-    |-- app.py                  # Main Streamlit application
-    |-- data/                   # Folder for datasets
-    |-- requirements.txt        # Dependencies for the project
-    |-- README.md               # Project documentation
+    |-- data_preprocessing_+_model_project.py                  # Main Streamlit application (Not the catchiest name in the world)
+    |-- data/                                                  # Folder for datasets
+    |-- requirements.txt                                       # Dependencies for the project
+    |-- README.md                                              # Project documentation
 ```
 
 ### Usage Example
