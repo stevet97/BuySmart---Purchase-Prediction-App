@@ -19,6 +19,10 @@ The app uses a **Logistic Regression model** trained on customer data, with feat
 - **Streamlit**: To create an interactive web interface.
 - **Pandas, Scikit-learn**: For data preprocessing and model building.
 - **Matplotlib, Seaborn**: For data visualization.
+  
+  See the final application below:
+   ```sh
+  [https://buysmart---purchase-prediction-app-8ywzpcqhjjqi6hi9xxc54s.streamlit.app/]
 
 ### Installation and Usage
 To run the app locally, follow these steps:
