@@ -5,7 +5,7 @@ Welcome to **BuySmart**, a user-friendly web app that leverages machine learning
 
 The app uses a **Logistic Regression model** trained on customer data, with features like `Age`, `Salary`, and `Country`, to predict the purchase behavior (`Yes` or `No`). It also provides visualization for better insights into the model's performance, including a confusion matrix.
 
-![BuySmart App Screenshot](path-to-your-image.png)
+![BuySmart App Screenshot](Images/Hero page.png)
 
 ### Key Features
 - **Data Upload**: Users can upload a CSV file of customer data to make predictions.
