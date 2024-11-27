@@ -1,3 +1,4 @@
+import joblib
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,115 +11,160 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 import streamlit as st
 
-# Streamlit Title and Description
+st.markdown("<h2 style='text-align: center; color: blue;'>BuySmart Prediction Dashboard</h2>", unsafe_allow_html=True)
 st.title("BuySmart: Purchase Prediction App")
-st.markdown("""
-Welcome to BuySmart! This app predicts whether customers will make a purchase based on their demographic data.  
-Steps:
-1. Upload a dataset or use the default one.
-2. View data preprocessing and model training.
-3. Evaluate model performance and make predictions interactively.
-""")
 
 # File Upload or Default Dataset
 file_path = 'Data/Data.csv'
 uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
-if uploaded_file:
+if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.success("File uploaded successfully!")
+elif os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+    st.info("Using default dataset.")
 else:
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-        st.info("Using default dataset.")
-    else:
-        st.error("Default dataset not found. Please upload a file.")
-        st.stop()
+    st.error("Default dataset not found. Please upload a file.")
+    st.stop()
 
-# Display Dataset
+#Dataset Preview
 st.subheader("Dataset Preview")
+st.write("First 5 rows of the dataset:")
 st.dataframe(df.head())
-st.write("**Dataset Summary:**")
-st.write(df.describe())
-st.write("**Missing Values:**")
+
+st.sidebar.subheader("View Options")
+if st.sidebar.checkbox("View Raw Data"):
+    st.subheader("Raw Dataset")
+    st.write(df)
+
+if st.sidebar.checkbox("View Preprocessed Data"):
+    st.subheader("Preprocessed Dataset")
+    st.write(df)
+
+# Dataset Insights
+st.subheader("Data Insights")
+st.bar_chart(df['Purchased'].value_counts())
+
+# Age Distribution
+st.subheader("Age Distribution")
+fig, ax = plt.subplots()
+sns.histplot(df['Age'], kde=True, ax=ax, color='blue')
+ax.set_title('Age Distribution')
+st.pyplot(fig)
+
+# Salary Distribution
+st.subheader("Salary Distribution")
+fig, ax = plt.subplots()
+sns.boxplot(df['Salary'], ax=ax, color='green')
+ax.set_title('Salary Distribution')
+st.pyplot(fig)
+
+#Missing Values Overview
+st.subheader("Missing Values Overview")
+st.write("Missing values before imputation:")
 st.write(df.isnull().sum())
 
-# Step 1: Handle Missing Values
-st.subheader("Data Preprocessing")
-st.write("Handling missing values...")
-categorical_imputer = SimpleImputer(strategy='most_frequent')
-df['Country'] = categorical_imputer.fit_transform(df[['Country']])
+#Debug Country column
+st.write("Inspecting 'Country' column before imputation:")
+st.write("Data type:", df['Country'].dtype)
+st.write("Unique values:", df['Country'].unique())
+st.write("Shape:", df[['Country']].shape)
 
+# Replace missing or invalid values manually
+df['Country'] = df['Country'].replace(['nan', '', None, np.nan], 'Unknown')
+
+# Fill missing values in the 'Country' column with the most frequent value (manual approach)
+most_frequent_country = df['Country'].mode()[0]  # Get the most frequent value
+df['Country'] = df['Country'].fillna(most_frequent_country)  # Replace missing values
+st.success(f"Missing values in 'Country' column replaced with '{most_frequent_country}'.")
+
+# Handle missing values in numerical columns ('Age', 'Salary') using mean imputation
 numerical_imputer = SimpleImputer(strategy='mean')
 df[['Age', 'Salary']] = numerical_imputer.fit_transform(df[['Age', 'Salary']])
 
-# Step 2: One-Hot Encoding
-st.write("Encoding categorical variables...")
-onehot_encoder = OneHotEncoder(sparse=False)
+# Create and fit the scaler during preprocessing
+scaler = StandardScaler()
+df[['Age', 'Salary']] = scaler.fit_transform(df[['Age', 'Salary']])
+st.success("Missing values in numerical columns ('Age', 'Salary') have been handled.")
+
+# Perform one-hot encoding for the 'Country' column
+onehot_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')  # Use sparse_output instead of sparse
 countries_encoded = onehot_encoder.fit_transform(df[['Country']])
 country_df = pd.DataFrame(countries_encoded, columns=onehot_encoder.get_feature_names_out(['Country']))
-df = pd.concat([df, country_df], axis=1).drop(['Country'], axis=1)
 
-# Step 3: Define Features and Target
-st.write("Splitting data into features and target variable...")
+# Concatenate one-hot encoded columns with the rest of the dataframe and drop the original 'Country' column
+df = pd.concat([df, country_df], axis=1).drop(['Country'], axis=1)
+st.success("One-hot encoding for the 'Country' column completed.")
+
+
 x = df.drop('Purchased', axis=1)
 y = df['Purchased'].apply(lambda x: 1 if x == 'Yes' else 0)
 
-# Step 4: Scale Numerical Columns
-st.write("Scaling numerical features...")
-scaler = StandardScaler()
-x[['Age', 'Salary']] = scaler.fit_transform(x[['Age', 'Salary']])
-
-# Step 5: Split the Data
+x[['Age', 'Salary']] = StandardScaler().fit_transform(x[['Age', 'Salary']])
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-st.success("Preprocessing Complete!")
 
-# Step 6: Train Logistic Regression Model
-st.subheader("Model Training")
-st.write("Training Logistic Regression model...")
+# Train and Evaluate Model
+st.subheader("Model Training and Evaluation")
 model = LogisticRegression()
 model.fit(x_train, y_train)
-st.success("Model trained successfully!")
-
-# Step 7: Evaluate the Model
-st.subheader("Model Evaluation")
-st.write("Evaluating the model...")
 y_pred = model.predict(x_test)
+
 accuracy = accuracy_score(y_test, y_pred)
+st.write(f"Model Accuracy: {accuracy_score(y_test, y_pred):.2f}")
+
+#Confusion Matrix
 conf_matrix = confusion_matrix(y_test, y_pred)
-class_report = classification_report(y_test, y_pred, output_dict=True)
+st.write("Confusion Matrix:")
+st.write(conf_matrix)
 
-st.write(f"**Model Accuracy:** {accuracy * 100:.2f}%")
-st.write("**Confusion Matrix:**")
-st.dataframe(conf_matrix)
-
-# Confusion Matrix Heatmap
-st.write("**Confusion Matrix Heatmap:**")
+#Confusion Matrix Heatmap
+st.subheader("Confusion Matrix Heatmap")
 fig, ax = plt.subplots()
 sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', ax=ax)
 st.pyplot(fig)
 
-st.write("**Classification Report:**")
-st.json(class_report)
+st.subheader("Additional Model Metrics")
+precision = classification_report(y_test, y_pred, output_dict=True)['weighted avg']['precision']
+recall = classification_report(y_test, y_pred, output_dict=True)['weighted avg']['recall']
+f1 = classification_report(y_test, y_pred, output_dict=True)['weighted avg']['f1-score']
 
-# Step 8: Save Preprocessed Data
-x_train.to_csv('x_train.csv', index=False)
-y_train.to_csv('y_train.csv', index=False)
+st.write(f"Precision: {precision:.2f}")
+st.write(f"Recall: {recall:.2f}")
+st.write(f"F1-Score: {f1:.2f}")
 
-# Step 9: Allow User to Make Predictions
-st.subheader("Make a Prediction")
-user_country = st.selectbox("Select Country", df.columns[df.columns.str.startswith('Country_')])
-user_age = st.slider("Age", 18, 70, 30)
-user_salary = st.number_input("Salary", 10000, 150000, 50000)
+# Save model
+joblib.dump(model, 'logistic_model.pkl')
+st.success("Model saved successfully!")
 
-# Preprocess User Input
-user_data = pd.DataFrame([[user_country, user_age, user_salary]], columns=['Country', 'Age', 'Salary'])
-user_data[user_country] = 1  # Set selected country to 1
-user_data = user_data.fillna(0)  # Fill other countries with 0
+# Prepare user data for prediction
+st.subheader("Make Predictions")
+
+# Collect user input
+country_options = [col.replace('Country_', '') for col in df.columns if col.startswith('Country_')]
+user_country = st.selectbox("Select Country", country_options, key="user_country_selection")
+user_age = st.slider("Select Age", min_value=18, max_value=70, value=30, key="user_age_slider")
+user_salary = st.number_input("Enter Salary", min_value=10000, max_value=150000, value=50000, key="user_salary_input")
+
+# Prepare the user's input data
+user_data = pd.DataFrame([[user_age, user_salary] +
+                          [1 if country == user_country else 0 for country in country_options]],
+                         columns=['Age', 'Salary'] + [f"Country_{country}" for country in country_options])
+
+# Reuse the fitted scaler to transform user input
 user_data[['Age', 'Salary']] = scaler.transform(user_data[['Age', 'Salary']])
 
-# Make Prediction
-if st.button("Predict"):
+# Predict button and display results
+if st.button("Predict", key="predict_button"):
     prediction = model.predict(user_data)
     result = "Yes" if prediction[0] == 1 else "No"
     st.write(f"Prediction: **{result}** (Will the customer purchase?)")
+
+# Check for invalid inputs
+if user_salary < 10000 or user_salary > 150000:
+    st.error("Salary must be between 10,000 and 150,000.")
+else:
+    user_data = pd.DataFrame([[user_age, user_salary] +
+                              [1 if country == user_country else 0 for country in country_options]],
+                             columns=['Age', 'Salary'] + [f"Country_{country}" for country in country_options])
+    user_data[['Age', 'Salary']] = scaler.transform(user_data[['Age', 'Salary']])
 
