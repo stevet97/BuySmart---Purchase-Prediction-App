@@ -5,7 +5,7 @@ Welcome to **BuySmart**, a user-friendly web app that leverages machine learning
 
 The app uses a **Logistic Regression model** trained on customer data, with features like `Age`, `Salary`, and `Country`, to predict the purchase behavior (`Yes` or `No`). It also provides visualization for better insights into the model's performance, including a confusion matrix.
 
-![BuySmart App Screenshot](Images/Hero page.png)
+![BuySmart App Screenshot](Images/Hero_page.png)
 
 ### Key Features
 - **Data Upload**: Users can upload a CSV file of customer data to make predictions.
@@ -84,5 +84,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ### Contact
-For any inquiries, you can reach me at [your-email@example.com].
+For any inquiries, you can reach me at [stephenthomas382@gmail.com]
+Let me know if you need help with deploying this README or making further tweaks!
+
 
