@@ -14,17 +14,24 @@ import streamlit as st
 st.markdown("<h2 style='text-align: center; color: blue;'>BuySmart Prediction Dashboard</h2>", unsafe_allow_html=True)
 st.title("BuySmart: Purchase Prediction App")
 
+# Ensure the file path is dynamic and works regardless of the execution location
+default_file_path = os.path.join(os.path.dirname(__file__), 'Data', 'Data.csv')
+st.write(f"Resolved file path: {default_file_path}")
+
+
 # File Upload or Default Dataset
-file_path = 'Data/Data.csv'
+default_file_path = 'Data/Data.csv'
+
+# File Upload or Default Dataset
 uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.success("File uploaded successfully!")
-elif os.path.exists(file_path):
-    df = pd.read_csv(file_path)
-    st.info("Using default dataset.")
+elif os.path.exists(default_file_path):  # Check if the default dataset exists
+    df = pd.read_csv(default_file_path)
+    st.info("Using the default dataset.")
 else:
-    st.error("Default dataset not found. Please upload a file.")
+    st.error("Default dataset not found. Please upload a file to proceed.")
     st.stop()
 
 #Dataset Preview
